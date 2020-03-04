@@ -6,27 +6,85 @@ import * as util from "../common/utils.js";
 var tokens = null;
 
 
+async function fetchFoodData()  {
+	let refreshStatus = await refreshToken();
+	
+	if(!refreshStatus) {
+		return;
+	}
+	
+	sendMessage('Fetching data...');
+	
+	let res = await fetch(getUpdateUrl(), {
+		method: "GET",
+		headers: {
+			"Authorization": `Bearer ${tokens.access_token}`
+		}
+	});
+
+	let data = await res.json();
+	
+	if(checkApiError(data))
+		return;
+	
+	messaging.peerSocket.send({
+		type: 'food',
+		calories: data.summary.calories,
+		carbs: data.summary.carbs,
+		fats: data.summary.fat,
+		fiber: data.summary.fibers,
+		proteins: data.summary.protein,
+		sodium: data.summary.sodium,
+		water: data.summary.water
+	});
+}
+
+
 async function refreshToken() {
+	if(tokens == null)
+	{
+		console.log('No token on device, checking companion...')
+		let status = getTokens();
+
+		if(!status) {
+			console.error('No tokens on companion. Manually request a new token');
+			return false;
+		}
+	}
+
 	sendMessage('Refreshing Token...');
-	
-	console.log(JSON.stringify(tokens));
-	
+		
 	let res = await fetch('https://api.fitbit.com/oauth2/token', {
-	method: "POST",
-	headers: {
-		'Authorization': `Basic ${btoa('22BB79:e9973a9a5e5fef8367d4c00285a3d290')}`,
-		'Content-Type': 'application/x-www-form-urlencoded'
-	},
-	body: `grant_type=refresh_token&refresh_token=${tokens.refresh_token}`
+		method: "POST",
+		headers: {
+			'Authorization': `Basic ${btoa('22BB79:e9973a9a5e5fef8367d4c00285a3d290')}`,
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		body: `grant_type=refresh_token&refresh_token=${tokens.refresh_token}`
 	});
 	
 	let data = await res.json();
 	if(checkApiError(data))
-	return false;
+		return false;
 	
 	tokens = data;
+
+	console.log(`New token: ${tokens.access_token}`);
 	
-	console.log(JSON.stringify(tokens));
+	return true;
+}
+
+
+// Get tokens from companion settings
+function getTokens() {
+	let data = JSON.parse(settingsStorage.getItem("oauth"));
+	
+	//console.log(JSON.stringify(data));
+	
+	if(data == null)
+		return false;
+	
+	tokens = data;
 	
 	return true;
 }
@@ -36,13 +94,17 @@ function getUpdateUrl() {
 	let date = new Date();
 	let todayDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`; //YYYY-MM-DD
 	
-	return `https://api.fitbit.com/1/user/-/foods/log/date/${todayDate}.json`
+	let url = `https://api.fitbit.com/1/user/-/foods/log/date/${todayDate}.json`;
+
+	console.log(url);
+
+	return url;
 }
 
 
 function checkApiError(data) {
 	if(data.success === undefined || data.success === true)
-	return false;
+		return false;
 	
 	console.error(JSON.stringify(data));
 
@@ -70,56 +132,6 @@ function checkApiError(data) {
 	return true;
 }
 
-async function fetchFoodData()  {
-	let refreshStatus = await refreshToken();
-	
-	if(!refreshStatus)
-	return;
-	
-	sendMessage('Fetching data...')
-	
-	let res = await fetch(getUpdateUrl(), {
-	method: "GET",
-	headers: {
-		"Authorization": `Bearer ${tokens.access_token}`
-	}
-	});
-	
-	let data = await res.json();
-	
-	if(checkApiError(data))
-	return;
-	
-	while(messaging.peerSocket.State !== messaging.peerSocket.OPEN) {
-		console.log('closed')
-	}
-	
-	messaging.peerSocket.send({
-	type: 'food',
-	calories: data.summary.calories,
-	carbs: data.summary.carbs,
-	fats: data.summary.fat,
-	fiber: data.summary.fibers,
-	proteins: data.summary.protein,
-	sodium: data.summary.sodium,
-	water: data.summary.water
-	});
-}
-
-
-// Restore previously saved settings and send to the device
-function getTokens() {
-	let data = JSON.parse(settingsStorage.getItem("oauth"));
-	
-	console.log(JSON.stringify(data));
-	
-	if(data == null)
-	return false;
-	
-	tokens = data;
-	
-	return true;
-}
 
 function sendMessage(msg) {
 	console.log(`SendMessage: ${msg}`);
@@ -129,11 +141,8 @@ function sendMessage(msg) {
 		return;
 	}
 	
-	console.log(`PeerSocketState is ${messaging.peerSocket.readyState}, sending message...`);
+	// console.log(`PeerSocketState is ${messaging.peerSocket.readyState}, sending message...`);
 	
-	messaging.peerSocket.send('a');
-	return;
-
 	messaging.peerSocket.send({
 		msg: msg,
 		type: 'food-msg'
@@ -154,24 +163,8 @@ messaging.peerSocket.onerror = function(err) {
 
 
 messaging.peerSocket.onmessage = function(evt) {
-	console.log(JSON.stringify(evt.data));
-	
 	if(evt.data !== "update-food") {
 		return;
-	}
-	
-	sendMessage('a');
-	return;
-	
-	//sendMessage(`Request received (${util.getTime()})`);
-	return;
-	
-	if (tokens == null) {
-	if(!getTokens()) {
-		console.warn('No token data from companion settings');
-		sendMessage('1');
-		return;
-	}
 	}
 
 	fetchFoodData();

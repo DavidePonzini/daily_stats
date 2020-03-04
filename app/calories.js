@@ -133,9 +133,7 @@ messaging.peerSocket.onerror = function(err) {
 }
 
 messaging.peerSocket.onmessage = function(evt) {
-	console.log('msg!!')
-
-	console.log(JSON.stringify(evt.data));
+	// console.log(JSON.stringify(evt.data));
 
 	if (!evt.data) {
 		vibration.start("nudge");
