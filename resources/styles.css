@@ -1,0 +1,80 @@
+#background {
+  viewport-fill: black;
+  width: 100%;
+}
+
+
+.clock-hm {
+  font-size: 80;
+  font-family: Seville-Regular;
+  text-length: 5;
+}
+
+.clock-s {
+  font-size: 40;
+  font-family: Seville-Condensed;
+  text-length: 2;
+  text-anchor: middle;
+}
+
+.clock-date {
+  font-size: 30;
+  font-family: Seville-Book;
+}
+
+.clock-dow {
+  font-size: 20;
+  font-family: Seville-Book;
+}
+
+text {
+  text-anchor: middle;
+  fill: white;
+  font-size: 20;
+  text-length: 32;
+
+}
+
+.clicker {
+  r: 35%;
+  fill: none;
+  pointer-events: visible;
+}
+
+.text-left {
+  text-anchor: start;
+}
+
+.debug-msg {
+  text-length: 60;
+  font-size: 12;
+}
+
+.stats {
+  width: 100%-50;
+  height: 100%-50;
+}
+
+#calories-text {
+  text-anchor: end;
+  text-length: 5;
+}
+
+
+#battery-text {
+  text-anchor: end;
+  text-length: 6;
+}
+
+#hr-text {
+  text-anchor: start;
+  text-length: 5;
+}
+
+.icon {
+  width: 24;
+  height: 24;
+  x:0;
+  y:0;
+  fill: crimson;
+}

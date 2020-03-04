@@ -1,0 +1,42 @@
+.arc {
+  width: 100%;
+  height: 100%;
+  arc-width: 24;
+}
+
+.arc-bg {
+  fill: #505050;
+}
+
+.arc-small {
+  width: 100%-16;
+  height: 100%-16;
+  arc-width: 6;
+  x: 8;
+  y: 8;
+}
+
+.arc-cap {
+  r: 12;
+}
+
+.arc-cap-small {
+  r: 6;
+}
+
+.arc1  { fill: #00a629; }
+.arc1b { fill: #f83c40; }
+.arc2  { fill: #2490dd; }
+.arc3  { fill: #f83c40; }
+.arc4  { fill: #ffd733; }
+
+
+.arc-container {
+  width: 100%-40;
+  height: 100%-40;
+}
+
+.arc-top    { y: 0; }
+.arc-bottom { y: 40; }
+.arc-left   { x: 0; }
+.arc-right  { x: 40; }
