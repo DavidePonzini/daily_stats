@@ -1,13 +1,9 @@
 import * as messaging from "messaging";
-import { settingsStorage } from "settings";
-import * as util from "../common/utils.js";
-
-
-var tokens = null;
+import * as token from "./token";
 
 
 async function fetchFoodData()  {
-	let refreshStatus = await refreshToken();
+	let refreshStatus = await token.refresh(sendMessage);
 	
 	if(!refreshStatus) {
 		return;
@@ -18,7 +14,7 @@ async function fetchFoodData()  {
 	let res = await fetch(getUpdateUrl(), {
 		method: "GET",
 		headers: {
-			"Authorization": `Bearer ${tokens.access_token}`
+			"Authorization": `Bearer ${token.tokens.access_token}`
 		}
 	});
 
@@ -37,56 +33,6 @@ async function fetchFoodData()  {
 		sodium: data.summary.sodium,
 		water: data.summary.water
 	});
-}
-
-
-async function refreshToken() {
-	if(tokens == null)
-	{
-		console.log('No token on device, checking companion...')
-		let status = getTokens();
-
-		if(!status) {
-			console.error('No tokens on companion. Manually request a new token');
-			return false;
-		}
-	}
-
-	sendMessage('Refreshing Token...');
-		
-	let res = await fetch('https://api.fitbit.com/oauth2/token', {
-		method: "POST",
-		headers: {
-			'Authorization': `Basic ${btoa('22BB79:e9973a9a5e5fef8367d4c00285a3d290')}`,
-			'Content-Type': 'application/x-www-form-urlencoded'
-		},
-		body: `grant_type=refresh_token&refresh_token=${tokens.refresh_token}`
-	});
-	
-	let data = await res.json();
-	if(checkApiError(data))
-		return false;
-	
-	tokens = data;
-
-	console.log(`New token: ${tokens.access_token}`);
-	
-	return true;
-}
-
-
-// Get tokens from companion settings
-function getTokens() {
-	let data = JSON.parse(settingsStorage.getItem("oauth"));
-	
-	//console.log(JSON.stringify(data));
-	
-	if(data == null)
-		return false;
-	
-	tokens = data;
-	
-	return true;
 }
 
 
@@ -117,11 +63,9 @@ function checkApiError(data) {
 		break;
 		case 'invalid_token':
 		sendMessage('Invalid access token');
-		tokens = null;
 		break;
 		case 'invalid_grant':
 		sendMessage('Invalid refresh token');
-		tokens = null;
 		break;
 		default:
 		sendMessage(e.message);

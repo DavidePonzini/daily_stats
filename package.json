@@ -8,7 +8,7 @@
     "@fitbit/sdk-cli": "^1.7.1"
   },
   "fitbit": {
-    "appUUID": "ed71c77b-b68c-44fc-9092-4b18795389ec",
+    "appUUID": "dd2585cd-9475-4052-b94a-0e8950cf2f8e",
     "appType": "clockface",
     "appDisplayName": "Daily Stats",
     "iconFile": "resources/icon.png",
