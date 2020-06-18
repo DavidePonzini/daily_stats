@@ -22,7 +22,7 @@ export function tick(evt) {
   let battery_lvl = battery.chargeLevel;
   draw.drawArc(svg.arc, battery_lvl, 100);
   
-  svg.text.text = battery.charging ? `[${battery_lvl}%]` : `${battery_lvl}%`;
+  svg.text.text = battery.charging ? '' : `${battery_lvl}%`;
 }
 
 

@@ -6,6 +6,9 @@ export function zeroPad(i) {
   return i;
 }
 
+export function round_decimal(num, places=2) {
+  return Math.round((num + Number.EPSILON) * 10**places) / 10**places;
+}
 
 export function dowToLetters(dow) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

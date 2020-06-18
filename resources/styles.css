@@ -62,8 +62,8 @@ text {
 
 
 #battery-text {
-  text-anchor: end;
-  text-length: 6;
+  text-anchor: start;
+  text-length: 4;
 }
 
 #hr-text {

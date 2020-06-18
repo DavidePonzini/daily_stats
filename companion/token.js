@@ -17,6 +17,10 @@ function getFromCompanion() {
 	return true;
 }
 
+function setTokens(tokens) {
+	settingsStorage.setItem("oauth", JSON.stringify(tokens));
+}
+
 export async function refresh(message_cb) {
     if(tokens == null)
 	{
@@ -46,6 +50,7 @@ export async function refresh(message_cb) {
 		return false;
 	
 	tokens = data;
+	setTokens(tokens);
 
 	console.log(`New token: ${tokens.access_token}`);
 	

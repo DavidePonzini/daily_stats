@@ -22,8 +22,13 @@ const svg = {
 		'carbs': document.getElementById("calories-stats-carbs"),
 		'fats': document.getElementById("calories-stats-fats"),
 		'proteins': document.getElementById("calories-stats-proteins"),
-		'water': document.getElementById("calories-stats-water"),
-		'status': document.getElementById("calories-status")
+		// 'water': document.getElementById("calories-stats-water"),
+		'status': document.getElementById("calories-status"),
+		'arcs': {
+			'carbs': document.getElementById("calories-arcs-carbs"),
+			'fats': document.getElementById("calories-arcs-fats"),
+			'proteins': document.getElementById("calories-arcs-proteins")
+		}
 	}
 };
 
@@ -31,26 +36,33 @@ const svg = {
 let hidden = false;
 let stats_hidden = true;
 
-let data = {};
-const CAL_DEFICIT = 250;
-
+let data = undefined;
 
 
 function deficit() {
+	if(data === undefined)
+		return 0;
+
 	let elapsed = util.getElapsedSeconds(new Date());
 	let total = 60 * 60 * 24;
-	
 	let perc = elapsed / total;
-	
-	return Math.floor(CAL_DEFICIT * perc);
+
+	let cal_deficit = data.deficit;
+
+	return Math.floor(cal_deficit * perc);
 }
 
 
 export function update() {
+	if(messaging.peerSocket.readyState !== messaging.peerSocket.OPEN) {
+		svg.stats.status.text = 'Disconnected';
+		return;
+	}
+
 	svg.stats.status.text = `Request sent (${util.getTime()})`;
 
 	messaging.peerSocket.send('update-food');
-	vibration.start("confirmation");
+	// vibration.start("confirmation");
 }
 
 export function init() {
@@ -62,7 +74,7 @@ export function tick(evt) {
 		return;
 	
 	let cal_out = today.local.calories - deficit(); 
-	if (data.calories === undefined) {
+	if (data === undefined) {
 		draw.drawArc(svg.arcs.main, 0, 1);
 		draw.setVisibility(false, svg.arcs.excess);
 		return;
@@ -84,14 +96,43 @@ export function tick(evt) {
 		draw.drawArc(svg.arcs.excess, 1, 1);
 	}
 	
-	if(!stats_hidden) {
-		svg.stats.in.text = `In: ${data.calories === undefined ? '?' : data.calories} cals`;
-		svg.stats.out.text = `Out: ${cal_out} cals`;
-		svg.stats.carbs.text = `Carbs: ${data.carbs === undefined ? '?' : data.carbs} g`;
-		svg.stats.fats.text = `Fats: ${data.fats === undefined ? '?' : data.fats} g`;
-		svg.stats.proteins.text = `Proteins: ${data.proteins === undefined ? '?' : data.proteins} g`;
-		svg.stats.water.text = `Water: ${data.water === undefined ? '?' : data.water} ml`;
+	if(!stats_hidden)
+		tickStats(evt);
+}
+
+function tickStats(evt) {
+	if (data === undefined) {
+		draw.drawArcManual(svg.stats.arcs.carbs, 0, 0);
+		draw.drawArcManual(svg.stats.arcs.fats, 0, 0);
+		draw.drawArcManual(svg.stats.arcs.proteins, 0, 0);
+
+		svg.stats.in.text =       'In:  ?';
+		svg.stats.out.text =      'Out: ?';
+		svg.stats.carbs.text =    'C: ?';
+		svg.stats.fats.text =     'F: ?';
+		svg.stats.proteins.text = 'P: ?';
+		// svg.stats.water.text = 'W: ?';
+		return;
 	}
+
+	let cal_perc_carbs    = data.carbs    * 4 / data.calories;
+	let cal_perc_fats     = data.fats     * 9 / data.calories;
+	let cal_perc_proteins = data.proteins * 4 / data.calories;
+
+	let degrees_carbs    = cal_perc_carbs    * 360;
+	let degrees_fats     = cal_perc_fats     * 360;
+	let degrees_proteins = 360 - degrees_carbs - degrees_fats;
+	
+	draw.drawArcManual(svg.stats.arcs.carbs, degrees_carbs, 0);
+	draw.drawArcManual(svg.stats.arcs.fats, degrees_fats, degrees_carbs);
+	draw.drawArcManual(svg.stats.arcs.proteins, degrees_proteins, degrees_carbs + degrees_fats);
+
+	svg.stats.in.text =       `In:  ${data.calories} cals`;
+	svg.stats.out.text =      `Out: ${today.local.calories - deficit()} cals`;
+	svg.stats.carbs.text =    `C: ${Math.round(100 * cal_perc_carbs)} %`;
+	svg.stats.fats.text =     `F: ${Math.round(100 * cal_perc_fats)} %`;
+	svg.stats.proteins.text = `P: ${Math.round(100 * cal_perc_proteins)} %`;
+	// svg.stats.water.text = `W: ${data.water} ml`;
 }
 
 export function changeFace(face) {
@@ -135,8 +176,9 @@ messaging.peerSocket.onerror = function(err) {
 messaging.peerSocket.onmessage = function(evt) {
 	// console.log(JSON.stringify(evt.data));
 
+
 	if (!evt.data) {
-		vibration.start("nudge");
+		//vibration.start("nudge");
 		svg.stats.status.text = 'No data received';
 		
 		return;
@@ -144,11 +186,11 @@ messaging.peerSocket.onmessage = function(evt) {
 
 	switch(evt.data.type) {
 		case "food-msg":
-			vibration.start("nudge");
-			svg.stats.status.text = evt.data.msg;
+			// vibration.start("nudge");
+			// svg.stats.status.text = evt.data.msg;
 			break;
 		case "food":
-			vibration.start("confirmation");
+			// vibration.start("confirmation");
 			data = evt.data;
 			svg.stats.status.text = `Up-to-date (${util.getTime()})`;
 			break;

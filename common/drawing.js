@@ -8,9 +8,17 @@ export function getDegrees(val, maxVal, degrees=90) {
 }
 
 export function drawArc(arc, val, maxVal, degrees=90) {
-  if (arc != null)
-    arc.sweepAngle = getDegrees(val, maxVal, degrees);
+  drawArcManual(arc, getDegrees(val, maxVal, degrees), undefined);
 }
+
+export function drawArcManual(arc, angle, start=undefined) {
+  if (arc != null)
+    arc.sweepAngle = angle;
+    
+    if(start !== undefined)
+      arc.startAngle = start;
+}
+
 
 export function drawArc2(arc, cap, val, maxVal, degrees=90) {
   if (arc != null)

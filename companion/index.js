@@ -1,5 +1,6 @@
 import * as messaging from "messaging";
 import * as token from "./token";
+import { settingsStorage } from "settings";
 
 
 async function fetchFoodData()  {
@@ -22,16 +23,20 @@ async function fetchFoodData()  {
 	
 	if(checkApiError(data))
 		return;
+
+	let cal_deficit = JSON.parse(settingsStorage.getItem("calories-deficit"));
+	cal_deficit = cal_deficit.name;
 	
 	messaging.peerSocket.send({
 		type: 'food',
-		calories: data.summary.calories,
-		carbs: data.summary.carbs,
-		fats: data.summary.fat,
-		fiber: data.summary.fibers,
-		proteins: data.summary.protein,
-		sodium: data.summary.sodium,
-		water: data.summary.water
+		deficit: +cal_deficit,
+		calories: +data.summary.calories,
+		carbs: +data.summary.carbs,
+		fats: +data.summary.fat,
+		fiber: +data.summary.fibers,
+		proteins: +data.summary.protein,
+		sodium: +data.summary.sodium,
+		water: +data.summary.water
 	});
 }
 

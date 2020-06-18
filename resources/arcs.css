@@ -24,11 +24,10 @@
   r: 6;
 }
 
-.arc1  { fill: #00a629; }
-.arc1b { fill: #f83c40; }
-.arc2  { fill: #2490dd; }
-.arc3  { fill: #f83c40; }
-.arc4  { fill: #ffd733; }
+.arc-green  { fill: #00a629; }
+.arc-yellow  { fill: #ffd733; }
+.arc-red  { fill: #f83c40; }
+.arc-blue  { fill: #2490dd; }
 
 
 .arc-container {
@@ -40,3 +39,7 @@
 .arc-bottom { y: 40; }
 .arc-left   { x: 0; }
 .arc-right  { x: 40; }
+
+.test {
+  fill: crimson;
+}
