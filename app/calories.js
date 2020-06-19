@@ -101,23 +101,30 @@ export function tick(evt) {
 }
 
 function tickStats(evt) {
-	if (data === undefined) {
+	if (data === undefined || data.calories == 0) {
 		draw.drawArcManual(svg.stats.arcs.carbs, 0, 0);
 		draw.drawArcManual(svg.stats.arcs.fats, 0, 0);
 		draw.drawArcManual(svg.stats.arcs.proteins, 0, 0);
 
-		svg.stats.in.text =       'In:  ?';
-		svg.stats.out.text =      'Out: ?';
-		svg.stats.carbs.text =    'C: ?';
-		svg.stats.fats.text =     'F: ?';
-		svg.stats.proteins.text = 'P: ?';
-		// svg.stats.water.text = 'W: ?';
+	svg.stats.in.text =       'In:  0 cals';
+	svg.stats.out.text =      `Out: ${today.local.calories - deficit()} cals`;
+	svg.stats.carbs.text =    'C: 0 %';
+	svg.stats.fats.text =     'F: 0 %';
+	svg.stats.proteins.text = 'P: 0 %';
+	// svg.stats.water.text = 'W: 0 ml';
 		return;
 	}
 
-	let cal_perc_carbs    = data.carbs    * 4 / data.calories;
-	let cal_perc_fats     = data.fats     * 9 / data.calories;
-	let cal_perc_proteins = data.proteins * 4 / data.calories;
+	//console.log(JSON.stringify(data));
+
+	let cal_carbs = data.carbs * 4;
+	let cal_fats = data.fats * 9;
+	let cal_proteins = data.proteins * 4;
+	let total_cals = cal_carbs + cal_fats + cal_proteins;
+
+	let cal_perc_carbs    = cal_carbs    / total_cals;
+	let cal_perc_fats     = cal_fats     / total_cals;
+	let cal_perc_proteins = cal_proteins / total_cals;
 
 	let degrees_carbs    = cal_perc_carbs    * 360;
 	let degrees_fats     = cal_perc_fats     * 360;
